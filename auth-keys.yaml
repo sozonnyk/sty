@@ -1,0 +1,9 @@
+---
+username: 
+ssh-keys: keys
+accounts:
+  ga:
+    prod:
+      users:
+        key_id: 
+        secret_key: 

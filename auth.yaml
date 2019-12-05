@@ -1,0 +1,19 @@
+accounts:
+  ga:
+    prod:
+      users:
+        acc_id: 123
+      tools:
+        acc_id: 456
+        parent: ga/prod/users
+        role: abc
+      mgmt:
+        acc_id: 789
+        parent: ga/prod/users
+        role: cde
+      hub:
+        acc_id: 121
+        parent: ga/prod/users
+
+
+

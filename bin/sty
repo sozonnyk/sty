@@ -1,0 +1,23 @@
+#!/bin/bash -e +x
+
+if [ -z "$ZSH_VERSION" ] && [ -z "$BASH_VERSION" ]; then
+  echo "Your shell is neither bash nor zsh. Sty will not work."
+  exit 1
+fi
+
+if [[ $0 == "$BASH_SOURCE" ]]; then
+  export STY_SOURCE_RUN=false
+else
+  export STY_SOURCE_RUN=true
+fi
+
+# FIXME This is slow !
+sty=`gem which sty` #./lib/sty.rb"
+result=`ruby $sty $@`
+
+marker="#EVAL#"
+if [[ "$result" =~ $marker ]]; then
+  eval "$result"
+else
+  printf "$result\n"
+fi

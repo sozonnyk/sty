@@ -1,0 +1,7 @@
+ga:
+  prod:
+    mgmt:
+      linux: sshjumphost.internal
+      windows: rdp-proxy.internal
+    tools: ga/prod/mgmt
+    test: ga/prod/mgmt

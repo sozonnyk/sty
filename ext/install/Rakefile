@@ -1,0 +1,23 @@
+require 'rubygems'
+require 'fileutils'
+require 'sudo'
+
+task default: ['install_script']
+
+task :install_script do
+
+  fail "Sty doesnt work on Windows" if Gem.win_platform?
+
+  src = File.join(Dir.pwd, "..", "..", "bin", "sty")
+  dst = File.join('/', 'usr', 'local', 'bin', "sty")
+
+  begin
+    FileUtils.cp(src, dst)
+  rescue Errno::EPERM => e
+    STDERR.puts "No permission to create #{dst}, let's try with sudo."
+    Sudo::Wrapper.run do |sudo|
+      sudo[FileUtils].cp(src, dst)
+    end
+  end
+
+end

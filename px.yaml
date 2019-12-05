@@ -1,0 +1,7 @@
+lo:
+  proxy: http://localhost:3128
+  no-proxy: .internal
+
+ext:
+  proxy: http://proxy:8080
+  no-proxy: .internal
