@@ -27,6 +27,7 @@ class Proxy
   end
 
   def output(strings)
+    puts "#EVAL#"
     strings.each do |s|
       puts "#{s};"
     end

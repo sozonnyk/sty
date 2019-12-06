@@ -43,7 +43,7 @@ class Cli < Thor
 
   desc "proxy PROXY_ID", "Switch session proxy (use 'off' to disable)"
   def proxy(px)
-    #source_run(__method__)
+    source_run(__method__)
     Proxy.new.action(px)
   end
 
