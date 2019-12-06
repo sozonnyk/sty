@@ -11,9 +11,7 @@ else
   export STY_SOURCE_RUN=true
 fi
 
-# FIXME This is slow !
-sty=`gem which sty` #./lib/sty.rb"
-result=`ruby $sty $@`
+result=`ruby -e "require 'sty'" $@`
 
 marker="#EVAL#"
 if [[ "$result" =~ $marker ]]; then

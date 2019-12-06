@@ -124,11 +124,6 @@ class Cli
     active_role = role || acc['role'] || DEFAULT_ROLE_NAME
     role_arn = "arn:aws:iam::#{acc['acc_id']}:role/#{active_role}"
 
-    if active_role.match(/^Admin.*/) and path[0].match(/^[ga|preview].*/)
-      STDERR.puts red("WARNING: You are about to use a privileged user in non dev enviroment!")
-      STDERR.puts red("This will be will be subjected to close scrunity. Consider using ReadOnlyRole instead or CI/CD instead.")
-    end
-
     cached = cached_creds(path, active_role)
     return { creds: cached[:creds], expiry: cached[:expiry], identity: active_role } if cached
 

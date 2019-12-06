@@ -1,5 +1,4 @@
----
-username: 
+username:
 ssh-keys: keys
 accounts:
   ga:

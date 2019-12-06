@@ -6,14 +6,11 @@ class Info
     if ENV['AWS_ACTIVE_ACCOUNT']
       puts "Active account: #{white(ENV['AWS_ACTIVE_ACCOUNT'])}"
     else
-      puts red("You are not authenticated with cba-cli")
+      puts red("You are not authenticated with sty")
     end
 
     if ENV['AWS_ACTIVE_IDENTITY']
       puts "Active identity: #{white(ENV['AWS_ACTIVE_IDENTITY'])}"
-      if ENV['AWS_ACTIVE_IDENTITY'].match(/^Admin.*/)
-        puts red("You are using a privileged user. Please consider switching to ReadOnly role for safety sake!")
-      end
     end
 
     if ENV['AWS_SESSION_EXPIRY']

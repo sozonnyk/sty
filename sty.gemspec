@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = ">= 1.3.5"
   s.summary = s.description
 
-  s.files = %w(.document sty.gemspec) + Dir["*.md", "bin/*", "lib/**/*.rb"]
+  s.files = %w(.document sty.gemspec) + Dir["*.md", "bin/*", "lib/**/*.rb", "*.yaml"]
   s.extensions = ['ext/install/Rakefile']
 
   s.add_development_dependency "bundler", ">= 1.0", "< 3"

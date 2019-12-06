@@ -1,6 +1,11 @@
 require 'psych'
 require 'time'
 
+def sty_home
+  home = File.expand_path('~')
+  "#{home}/.sty"
+end
+
 def colorize(string, color_code)
   "\e[#{color_code}m#{string}\e[0m"
 end
@@ -34,7 +39,7 @@ def to_fqn(path)
 end
 
 def dir
-  @dir = @dir || File.expand_path(File.dirname(__FILE__)+'/../..')
+  @dir = @dir || sty_home
 end
 
 def cache_file(path, identity)

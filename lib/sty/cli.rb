@@ -2,9 +2,10 @@ require 'thor'
 require_relative 'auth'
 require_relative 'info'
 require_relative 'console'
+require_relative 'proxy'
 
 class Cli < Thor
-  map auth: :login, acct: :account
+  map auth: :login, acct: :account, px: :proxy
 
   def self.basename
     'sty'
@@ -38,6 +39,12 @@ class Cli < Thor
   desc "account ACCOUNT_ID", "Find account information"
   def account(path)
     Info.new.account_info(path)
+  end
+
+  desc "proxy PROXY_ID", "Switch session proxy (use 'off' to disable)"
+  def proxy(px)
+    #source_run(__method__)
+    Proxy.new.action(px)
   end
 
   no_tasks do
