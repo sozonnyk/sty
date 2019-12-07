@@ -1,19 +1,12 @@
-trap "INT" do
-  $stderr.reopen(IO::NULL)
-  $stdout.reopen(IO::NULL)
-  exit 1
-  end
-
 require_relative 'functions'
-require 'aws-sdk-ec2'
-require 'optparse'
-require 'ostruct'
 require 'uri'
-require 'pry'
 
-Aws.config.update(:http_proxy => ENV['https_proxy'])
+class Ssh
 
-class EC2
+  def initialize
+    require 'aws-sdk-ec2'
+    Aws.config.update(:http_proxy => ENV['https_proxy'])
+  end
 
   def all_instances
     instances = []
@@ -96,7 +89,7 @@ class EC2
   end
 
   def find_path(hash, path)
-    path.split('/').reduce(hash) { |memo, path| memo[path] }
+    path.split('/').reduce(hash) { |memo, path| memo[path] if memo}
   end
 
   def path?(str)
@@ -145,45 +138,13 @@ class EC2
     target
   end
 
-  def print_options
-    opts = []
-    opts << 'no_jumphost' if options.no_jumphost
-    opts << 'select_jumphost' if options.jumphost_override
-    opts << 'use_key' if options.target_key
-    puts "Enabled options: #{opts.join(', ')}"
-    puts "Requested search terms: #{ARGV.join(', ')}"
-  end
-
-  def options
-    return @options if @options
-
-    @options = OpenStruct.new
-
-    OptionParser.new do |opts|
-      opts.banner = "Usage: ec2 [options] <search_term...> \nCreates ssh connection to desired ec2 instance through existing jumphost"
-      opts.separator "    <search_term>                    String to search in EC2 instance ID, name or IP address"
-      opts.separator ""
-      opts.separator "Options:"
-
-      opts.on("-n", "--no_jumphost", "Connect directly without jumphost" ) do |value|
-        options.no_jumphost = value
-      end
-
-      opts.on("-s", '--select_jumphost', "Select jumphost instance" ) do |value|
-        options.jumphost_override = value
-      end
-
-      opts.on("-k", '--use_key', "Use private key auth for target instance",
-              "Keys are recursively searched in #{key_dir}", "(Linux only)") do |value|
-        options.target_key = value
-      end
-
-    end.parse!
-    @options
-  end
-
   def find_jumphost_from_config(act_acc, platform)
     jumphosts = find_path(config, act_acc)
+
+    unless jumphosts
+      puts red("No jumphost configured for #{act_acc}")
+      exit 1
+    end
 
     path_error(act_acc) unless jumphosts
 
@@ -236,17 +197,22 @@ class EC2
     puts '------------------------'
   end
 
-  def ssh(args)
+  def connect(search, no_jumphost, jumphost_override, target_key)
+
     no_strict = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     server_alive = "-o ServerAliveInterval=25"
     ec2_user = 'ec2-user'
 
-    print_options
+    opts = []
+    opts << 'no_jumphost' if no_jumphost
+    opts << 'select_jumphost' if jumphost_override
+    opts << 'use_key' if target_key
+    puts "Enabled options: #{opts.join(', ')}"
+    puts "Requested search terms: #{search.join(', ')}"
 
     puts "Active account: #{act_acc}"
 
-    instance = find_instance(args, 'target')
-
+    instance = find_instance(search, 'target')
 
     if instance.platform == 'windows'
 
@@ -269,10 +235,9 @@ class EC2
     else
 
       proxy = ''
+      unless no_jumphost
 
-      unless options.no_jumphost
-
-        if options.jumphost_override
+        if jumphost_override
           puts 'Type jumphost search terms:'
           jumphost_query = STDIN.gets.chomp
           jh_instance = find_instance([jumphost_query], 'jumphost')
@@ -287,7 +252,7 @@ class EC2
       end
 
 
-      if options.target_key
+      if target_key
         key = find_key(instance.key_name)
         target_string = "-i #{key} #{ec2_user}@#{instance.ip}"
       else
@@ -303,4 +268,3 @@ class EC2
   end
 end
 
-EC2.new.ssh(ARGV)

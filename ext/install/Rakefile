@@ -7,11 +7,11 @@ task :install_script do
 
   fail "Sty doesnt work on Windows" if Gem.win_platform?
 
+  # Create /usr/local/bin/sty
   src = "#{Dir.pwd}/../../bin/sty"
   dst = '/usr/local/bin/sty'
 
   #TODO check if /usr/local/bin exists
-
   begin
     FileUtils.cp(src, dst)
   rescue Errno::EPERM, Errno::EACCES => e
@@ -19,12 +19,21 @@ task :install_script do
     `sudo cp #{src} #{dst}`
   end
 
+  # Create ~/.sty
   home = File.expand_path('~')
   sty_home = "#{home}/.sty/"
   FileUtils.mkdir_p(sty_home)
+  FileUtils.mkdir_p("#{sty_home}/auth-cache")
 
+  # Copy config file examples
   yamls = Dir.glob("#{Dir.pwd}/../../*.yaml")
-  FileUtils.cp(yamls, sty_home, verbose: true)
+  dest_yamls = Dir.glob("#{sty_home}/*.yaml").map{|f| File.basename(f)}
+
+  yamls.reject! do |y|
+    dest_yamls.include?(File.basename(y))
+  end
+
+  FileUtils.cp(yamls, sty_home)
 
   puts "All done"
 end

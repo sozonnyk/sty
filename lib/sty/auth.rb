@@ -1,12 +1,6 @@
 require_relative 'functions'
 require_relative 'dig'
 
-require 'aws-sdk-core'
-require 'psych'
-require 'net/http'
-
-Aws.config.update(:http_proxy => ENV['https_proxy'])
-
 SESSION_DURATION_SECONDS = 43_200
 DEFAULT_ROLE_NAME = 'ReadOnlyRole'
 DEFAULT_REGION = 'ap-southeast-2'
@@ -33,6 +27,9 @@ class Auth
   end
 
   def initialize
+    #aws-sdk is slow, so load it only when needed
+    require 'aws-sdk-core'
+    Aws.config.update(:http_proxy => ENV['https_proxy'])
     @config = deep_merge(yaml('auth'),yaml('auth-keys'))
   end
 

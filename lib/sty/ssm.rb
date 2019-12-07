@@ -1,9 +1,3 @@
-rap "INT" do
-  $stderr.reopen(IO::NULL)
-  $stdout.reopen(IO::NULL)
-  exit 1
-end
-
 require_relative 'functions'
 require 'aws-sdk-ec2'
 require 'aws-sdk-ssm'

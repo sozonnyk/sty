@@ -1,14 +1,23 @@
 require 'thor'
-require_relative 'auth'
 require_relative 'info'
+require_relative 'auth'
 require_relative 'console'
 require_relative 'proxy'
+require_relative 'ssh'
 
 class Cli < Thor
   map auth: :login, acct: :account, px: :proxy
 
   def self.basename
     'sty'
+  end
+
+  desc "ssh [OPTIONS] <SEARCH_TERM...>","Creates ssh connection to desired ec2 instance through existing jumphost. SEARCH_TERM to search in EC2 instance ID, name or IP address"
+  method_option :no_jumphost, type: :boolean, default: false, aliases: "-n", desc: "Connect directly without jumphost"
+  method_option :select_jumphost, type: :boolean, aliases: "-s", desc: "Select jumphost instance"
+  method_option :use_key, type: :boolean, aliases: "-k", desc: "Use private key auth for target instance. Keys are searched recursively in ~/.sty/keys"
+  def ssh(*search_term)
+    Ssh.new.connect(search_term, options[:no_jumphost], options[:select_jumphost], options[:use_key])
   end
 
   desc "console", "Opens AWS console in browser for currently authenticated session"
