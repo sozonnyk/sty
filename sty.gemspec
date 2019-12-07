@@ -21,6 +21,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "bundler", ">= 1.0", "< 3"
   #s.add_runtime_dependency 'aws-sdk', '~> 3'
   s.add_runtime_dependency 'thor', '~> 0.20'
-  s.add_runtime_dependency 'sudo', '~> 0.2'
   s.add_runtime_dependency 'ruby-keychain', '~> 0.3'
 end

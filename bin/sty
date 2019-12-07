@@ -1,4 +1,4 @@
-#!/bin/bash +e +x
+#!/bin/bash
 
 if [ -z "$ZSH_VERSION" ] && [ -z "$BASH_VERSION" ]; then
   echo "Your shell is neither bash nor zsh. Sty will not work."

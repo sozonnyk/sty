@@ -1,6 +1,5 @@
 require 'rubygems'
 require 'fileutils'
-require 'sudo'
 
 task default: ['install_script']
 
@@ -15,11 +14,9 @@ task :install_script do
 
   begin
     FileUtils.cp(src, dst)
-  rescue Errno::EPERM => e
+  rescue Errno::EPERM, Errno::EACCES => e
     puts "No permission to create #{dst}, let's try with sudo."
-    Sudo::Wrapper.run do |sudo|
-      sudo[FileUtils].cp(src, dst)
-    end
+    `sudo cp #{src} #{dst}`
   end
 
   home = File.expand_path('~')
@@ -29,4 +26,5 @@ task :install_script do
   yamls = Dir.glob("#{Dir.pwd}/../../*.yaml")
   FileUtils.cp(yamls, sty_home, verbose: true)
 
+  puts "All done"
 end

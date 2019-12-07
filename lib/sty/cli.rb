@@ -41,8 +41,8 @@ class Cli < Thor
     Info.new.account_info(path)
   end
 
-  desc "proxy PROXY_ID", "Switch session proxy (use 'off' to disable)"
-  def proxy(px)
+  desc "proxy [PROXY_ID]", "Switch session proxy (use 'off' to disable)"
+  def proxy(px = nil)
     source_run(__method__)
     Proxy.new.action(px)
   end

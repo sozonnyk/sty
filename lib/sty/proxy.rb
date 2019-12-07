@@ -6,8 +6,12 @@ class Proxy
     @config = @config || yaml('proxy')
   end
 
+  def proxy_vars
+    ENV.select { |e| e =~ /(https?|no)_proxy/i }
+  end
+
   def unset
-    ENV.select { |e| e =~ /(https?|no)_proxy/i }.keys.map do |e|
+    proxy_vars.keys.map do |e|
       "unset #{e}"
     end
   end
@@ -34,7 +38,14 @@ class Proxy
   end
 
   def action(px)
-    if px =~ /off/i
+    case
+    when px.nil?
+      STDERR.puts "Current proxy vars:"
+      proxy_vars.each do |k,v|
+        STDERR.puts "#{k}=#{v}"
+      end
+    when px =~ /off/i
+      STDERR.puts "Proxy vars unset"
       output(unset)
     else
       output(unset + set(px))
