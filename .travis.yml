@@ -1,0 +1,8 @@
+deploy:
+  provider: rubygems
+  api_key:
+    secure: P+PSZekuPiEz2PdqefyEi/TgIRfCITyVM3mZJDMNj/oqq05G7t9RcApeC4koP5DGsm1Mp4WQQ0DB0iiO6BCAIpnziKriiKBUi3yK8bzK5wt7qMXu/suhEj+ReBj+QWEpkhQdsW9542h7S+vYDdLcBbOloBA7UwWYkENYmd7Esi1UcFlaiALwN+T6cRV9h1HeWsbzDVefLn1AvFR/X5iY82WqvtdnC6ggqQbpyvQgkl8EPO+Y/scjkAxgcdfuuMnOs2PUaW8VeFI25UXyiGokx++X3CR7vHO2cHzT6Xov76aeLooHtfLWd0RX37jrzqIVqRVRx/Pq4DlK4iNLeKu0yp7XfjZsDnnElP6UZ/M+zPBMVH16MEiCjHg8VjVriYJpHPfL4fEe+YUUwTw+YHudZtpkmzmHmKUUQip7eBdumbKkHbLRcTstHDrK1oeFOAVMgJXIxbYD2yzPE8NykXWtNsXIzTbS3d4CPTTmwCfh5L8iy6ibVbLuiITnCGDOx29wdmmwK70PnkoYJM78+Ug6WAk4jOf8jymJHYO1hjMjEy/2CmY9LFrxuQPXYbGDDiTlazkGt/yapKT+axT6odcbRc5ldbirYEZ6XfMwh14+vnd6D62o/uWkcDJy4kim1cvubCi0JfzeZlnU7xqq3qLn6LA/pUy2qF6kj98E8Prb2mw=
+  gem: sty
+  on:
+    tags: true
+    repo: sozonnyk/sty
