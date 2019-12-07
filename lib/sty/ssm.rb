@@ -1,4 +1,4 @@
-trap "INT" do
+rap "INT" do
   $stderr.reopen(IO::NULL)
   $stdout.reopen(IO::NULL)
   exit 1

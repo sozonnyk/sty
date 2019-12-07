@@ -4,7 +4,7 @@ $LOAD_PATH.unshift lib unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |s|
   s.name = 'sty'
-  s.version = '0.0.0'
+  s.version = '0.0.1'
   s.description = "Command line tools"
   s.authors = ["Andrew Sozonnyk"]
   s.email = ''
@@ -19,7 +19,9 @@ Gem::Specification.new do |s|
   s.extensions = ['ext/install/Rakefile']
 
   s.add_development_dependency "bundler", ">= 1.0", "< 3"
-  #s.add_runtime_dependency 'aws-sdk', '~> 3'
+  s.add_runtime_dependency 'aws-sdk-core', '~> 3'
+  s.add_runtime_dependency 'aws-sdk-ec2', '~> 1'
+  s.add_runtime_dependency 'aws-sdk-ssm', '~> 1'
   s.add_runtime_dependency 'thor', '~> 0.20'
   s.add_runtime_dependency 'ruby-keychain', '~> 0.3'
 end

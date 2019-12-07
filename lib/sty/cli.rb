@@ -20,9 +20,10 @@ class Cli < Thor
   end
 
   desc "login ACCOUNT_PATH", "Authenticate to the account"
+  method_option :role, aliases: "-r", dssc: "Override role name"
   def login(path)
     source_run(__method__)
-    Auth.new.login(path)
+    Auth.new.login(path, options[:browser])
   end
 
   desc "logout", "Forget current credentials and clear cache"
