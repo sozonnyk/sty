@@ -91,6 +91,23 @@ To open a console in Firefox run:
 Some browsers support *incognito* window, which can be enabled with `-i`
 switch.
 
+### Proxy switcher
+
+To switch a proxy for the current session, run:
+
+`. sty proxy [name]`
+
+Where *name* is a proxy name from proxy configuration file
+`~/.sty/proxy.yaml`
+
+To get current proxy settings run the same command without proxy name.
+
+To turm proxy off for the current session, run:
+ 
+`. sty proxy off`
+
+Note that you can't use word `off` for a proxy name in the confif file.
+
 ## Configuration
 
 All config files live in `~/.sty`
