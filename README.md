@@ -6,20 +6,24 @@
 
 ## Overview
 
-Sty is a set of handy command line tools meant to help with day to day
-work with AWS. Sty is working on Mac and Linux using Bash or Zsh. Sty is
-written in Ruby so you need to have it installed beforehand. It is
-recommended to use Ruby version manager such as
-[!Rbenv](https://github.com/rbenv/rbenv)
+Sty is a set of handy command line tools meant to help with day-to-day
+work with AWS. Sty is working on Mac and Linux using Bash or Zsh. 
 
 ## Installation
+
+Sty is written in Ruby so you need to ensure it installed beforehand.
+Most modern Linux and Mac versions should have Ruby pre-installed. In
+any case, it is recommended to use Ruby version manager such as
+[rbenv](https://github.com/rbenv/rbenv)
+
+To install Sty run:
 `gem install sty`
 
 During installation, Sty creates it executable `/usr/local/bin/sty`.
-This installation step require sudo on Linux. 
+This installation step require sudo on Linux.
 
 Sty also creates `.sty` directory in your home folder. This is a place
-where all configuration fileas are located.
+where all configuration files are located.
 
 ## Functions
 
@@ -32,6 +36,17 @@ where all configuration fileas are located.
 ## Configuration
 
 All config files live in `~/.sty`
+
+## Uninstallation
+
+`gem uninstall sty 
+sudo rm -f /usr/local/bin/sty
+rm -rf ~/.sty`
+
+## Caveats
+
+- Credentials are stored in plain unencrypted files
+- Opening of a browser console is not working on Linux
 
 ## TODO 
 
