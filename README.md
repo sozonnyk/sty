@@ -16,7 +16,7 @@ Most modern Linux and Mac versions should have Ruby pre-installed. In
 any case, it is recommended to use Ruby version manager such as
 [rbenv](https://github.com/rbenv/rbenv)
 
-To install Sty execute:
+To install Sty run:
 
 `gem install sty`
 
@@ -34,15 +34,66 @@ where all configuration files are located.
 - Start SSM session to instances (require SSM plugin installed) 
 - Switch command line proxy settings
 
-## Configuration
-
-All config files live in `~/.sty`
-
 ## Usage
 
 Some Sty commands manipulate environment variables for your current
 session. To allow current session to be modified, you need to *source*
 Sty command, i.e.: `. sty login ...`
+
+### Authentication
+
+To authnticate to an account, run:
+ 
+`. sty login [fqn]`
+
+Where *fqn* is a full account name within the config file hyerarchy
+separated by `/`. E.g. `ga/prod/users`. Sty will ask for an MFA token,
+create session, and assume role in the other account according to the
+configuration. Once authenticated, credentials will be cached as well as
+exported to the current session env variables. When the same credentials
+are requested again form the other session, they will be loaded from the
+cache.
+
+To logout from the current account, i.e. clean env variables and delete
+cache file, run:
+
+`. sty logout`
+
+To get information about currently authenticated session run:
+
+`sty info`
+
+### Browser console (Mac only)
+
+if your session is authenticated, you can open a browser console
+directly into the current account.
+
+To open browser console, run:
+
+`sty console`
+
+This will open new session in the default browsert. Note, you can't
+create more then one session in the same browser window. Moreover you
+must logout from the current console to login to the different role or
+account.
+
+To log out from the current session in the default browser run":
+
+`sty console -l`
+
+You can also open browser console in the different browser. Supported
+browsers are `chrome` `firefox` `safari` and `vivaldi`
+
+To open a console in Firefox run:
+
+`sty console -b firefox`
+
+Some browsers support *incognito* window, which can be enabled with `-i`
+switch.
+
+## Configuration
+
+All config files live in `~/.sty`
 
 ## Uninstallation
 
