@@ -4,6 +4,7 @@ require_relative 'auth'
 require_relative 'console'
 require_relative 'proxy'
 require_relative 'ssh'
+require_relative 'ssm'
 
 class Cli < Thor
   map auth: :login, acct: :account, px: :proxy
@@ -12,7 +13,12 @@ class Cli < Thor
     'sty'
   end
 
-  desc "ssh [OPTIONS] <SEARCH_TERM...>","Creates ssh connection to desired ec2 instance through existing jumphost. SEARCH_TERM to search in EC2 instance ID, name or IP address"
+  desc "ssm [OPTIONS] <SEARCH_TERMS...>","Creates ssm session to an EC2 instance. SEARCH_TERMS to search in EC2 instance ID, name or IP address"
+  def ssm(*search_term)
+    Ssm.new.connect(search_term)
+  end
+
+  desc "ssh [OPTIONS] <SEARCH_TERMS...>","Creates ssh connection to an EC2 instance through existing jumphost. SEARCH_TERMS to search in EC2 instance ID, name or IP address"
   method_option :no_jumphost, type: :boolean, default: false, aliases: "-n", desc: "Connect directly without jumphost"
   method_option :select_jumphost, type: :boolean, aliases: "-s", desc: "Select jumphost instance"
   method_option :use_key, type: :boolean, aliases: "-k", desc: "Use private key auth for target instance. Keys are searched recursively in ~/.sty/keys"
@@ -32,7 +38,7 @@ class Cli < Thor
   method_option :role, aliases: "-r", dssc: "Override role name"
   def login(path)
     source_run(__method__)
-    Auth.new.login(path, options[:browser])
+    Auth.new.login(path, options[:role])
   end
 
   desc "logout", "Forget current credentials and clear cache"

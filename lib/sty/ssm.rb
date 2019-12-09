@@ -1,19 +1,18 @@
 require_relative 'functions'
-require 'aws-sdk-ec2'
-require 'aws-sdk-ssm'
-require 'optparse'
-require 'ostruct'
+require 'pathname'
 require 'uri'
-require 'pry'
 require 'json'
-require 'os'
 
-Aws.config.update(:http_proxy => ENV['https_proxy'])
+class Ssm
+  MINIMAL_AGENT_VERSION = '2.3.612.0'
+  DEFAULT_REGION = 'ap-southeast-2'
+  SSM_PLUGIN = "/usr/local/bin/session-manager-plugin"
 
-MINIMAL_AGENT_VERSION = '2.3.612.0'
-DEFAULT_REGION = 'ap-southeast-2'
-
-class SSM
+  def initialize
+    require 'aws-sdk-ec2'
+    require 'aws-sdk-ssm'
+    Aws.config.update(:http_proxy => ENV['https_proxy'])
+  end
 
   def region
     ENV['AWS_REGION'] || DEFAULT_REGION
@@ -126,21 +125,21 @@ class SSM
     target
   end
 
+
   def session_manager
-    case
-    when OS.mac?
-      "#{dir}/bin/osx/session-manager-plugin"
-    when OS.linux?
-      "#{dir}/bin/linux/session-manager-plugin"
-    else
-      raise "The tool doesn't have binary for #{OS.host}"
+    unless Pathname.new(SSM_PLUGIN).exist?
+      puts red("SSM plugin is not found: #{SSM_PLUGIN}.")
+      puts white("You must have SSM plugin to continue.\nSee: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html")
+      exit 1
     end
+    SSM_PLUGIN
   end
 
-  def connect(args)
-    found = find(all_ec2_instances, args)
+  def connect(search)
+
+    found = find(all_ec2_instances, search)
     if found.empty?
-      puts "No instances found for search terms: #{args.join(', ')}"
+      puts "No instances found for search terms: #{search.join(', ')}"
       exit 1
     end
     target = refine(found) {|found| print_refine_instances(found, 'target')}
@@ -156,9 +155,6 @@ class SSM
     mappings = {session_id: 'SessionId', token_value: 'TokenValue', stream_url: 'StreamUrl'}
     reqest_str = resp.to_h.map {|k, v| [mappings[k], v] }.to_h.to_json
     exec "#{session_manager} \'#{reqest_str}\' ap-southeast-2 StartSession"
-
   end
 
 end
-
-SSM.new.connect(ARGV)

@@ -1,11 +1,10 @@
 require_relative 'functions'
 require_relative 'dig'
 
-SESSION_DURATION_SECONDS = 43_200
-DEFAULT_ROLE_NAME = 'ReadOnlyRole'
-DEFAULT_REGION = 'ap-southeast-2'
-
 class Auth
+  SESSION_DURATION_SECONDS = 43_200
+  DEFAULT_ROLE_NAME = 'ReadOnlyRole'
+  DEFAULT_REGION = 'ap-southeast-2'
 
   def logout
     current = ENV['AWS_ACTIVE_ACCOUNT']
