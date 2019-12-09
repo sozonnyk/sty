@@ -4,7 +4,7 @@ $LOAD_PATH.unshift lib unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |s|
   s.name = 'sty'
-  s.version = '0.0.1'
+  s.version = '0.0.3'
   s.description = "Command line tools"
   s.authors = ["Andrew Sozonnyk"]
   s.email = ''
