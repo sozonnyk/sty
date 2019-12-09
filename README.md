@@ -39,9 +39,9 @@ All config files live in `~/.sty`
 
 ## Uninstallation
 
-`gem uninstall sty 
-sudo rm -f /usr/local/bin/sty
-rm -rf ~/.sty`
+`gem uninstall sty` 
+`sudo rm -f /usr/local/bin/sty` 
+`rm -rf ~/.sty`
 
 ## Caveats
 
