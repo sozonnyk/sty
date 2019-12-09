@@ -20,8 +20,8 @@ To install Sty run:
 
 `gem install sty`
 
-During installation, Sty creates it executable `/usr/local/bin/sty`.
-This installation step require sudo on Linux.
+During installation, Sty creates its executable `/usr/local/bin/sty`.
+This installation step requires sudo on Linux.
 
 Sty also creates `.sty` directory in your home folder. This is a place
 where all configuration files are located.
@@ -46,7 +46,7 @@ To authnticate to an account, run:
  
 `. sty login [fqn]`
 
-Where *fqn* is a full account name within the config file hyerarchy
+Where *fqn* is a full account name within the config file hierarchy
 separated by `/`. E.g. `ga/prod/users`. Sty will ask for an MFA token,
 create session, and assume role in the other account according to the
 configuration. Once authenticated, credentials will be cached as well as
@@ -72,7 +72,7 @@ To open browser console, run:
 
 `sty console`
 
-This will open new session in the default browsert. Note, you can't
+This will open new session in the default browser. Note, you can't
 create more then one session in the same browser window. Moreover you
 must logout from the current console to login to the different role or
 account.
