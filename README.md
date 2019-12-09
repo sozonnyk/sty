@@ -16,7 +16,8 @@ Most modern Linux and Mac versions should have Ruby pre-installed. In
 any case, it is recommended to use Ruby version manager such as
 [rbenv](https://github.com/rbenv/rbenv)
 
-To install Sty run:
+To install Sty execute:
+
 `gem install sty`
 
 During installation, Sty creates it executable `/usr/local/bin/sty`.
@@ -27,9 +28,9 @@ where all configuration files are located.
 
 ## Functions
 
-- Authenticate to AWS account, cache credentials
+- Authenticate command line to AWS account, cache and reuse credentials
 - Open browser console for the current session (Mac only)
-- SSH to instances, incluging using jumphost
+- SSH to instances (jumphost supported)
 - Start SSM session to instances (require SSM plugin installed) 
 - Switch command line proxy settings
 
@@ -37,10 +38,18 @@ where all configuration files are located.
 
 All config files live in `~/.sty`
 
+## Usage
+
+Some Sty commands manipulate environment variables for your current
+session. To allow current session to be modified, you need to *source*
+Sty command, i.e.: `. sty login ...`
+
 ## Uninstallation
 
 `gem uninstall sty` 
+
 `sudo rm -f /usr/local/bin/sty` 
+
 `rm -rf ~/.sty`
 
 ## Caveats
