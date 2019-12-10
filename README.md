@@ -9,7 +9,13 @@
 Sty is a set of handy command line tools meant to help with day-to-day
 work with AWS. Sty is working on Mac and Linux using Bash or Zsh. 
 
-Sty is supposed to work 
+The main use case for Sty is to obtain and store temporary AWS
+credentials for MFA enabled AWS users who are required to assume a role
+in the different account.
+
+Sty can also help to access EC2 instances using SSH or SSM Session. It
+provides a convenient command line interface to quickly select a server
+and initiate a connection.
 
 ## Installation
 
