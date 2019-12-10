@@ -1,6 +1,9 @@
 require 'rubygems'
 require 'fileutils'
 
+# Rubygems executable wrapper is not working for sty.
+# Thus we install the script using fake extension
+
 task default: ['install_script']
 
 task :install_script do
@@ -9,9 +12,12 @@ task :install_script do
 
   # Create /usr/local/bin/sty
   src = "#{Dir.pwd}/../../bin/sty"
-  dst = '/usr/local/bin/sty'
+  usr_local_bin = '/usr/local/bin'
+  dst = "#{usr_local_bin}/sty"
 
   #TODO check if /usr/local/bin exists
+  puts "There is no #{usr_local_bin}" unless File.exist?(usr_local_bin)
+
   begin
     FileUtils.cp(src, dst)
   rescue Errno::EPERM, Errno::EACCES => e

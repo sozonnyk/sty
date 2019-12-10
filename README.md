@@ -9,6 +9,8 @@
 Sty is a set of handy command line tools meant to help with day-to-day
 work with AWS. Sty is working on Mac and Linux using Bash or Zsh. 
 
+Sty is supposed to work 
+
 ## Installation
 
 Sty is written in Ruby so you need to ensure it installed beforehand.
@@ -106,7 +108,7 @@ To turm proxy off for the current session, run:
  
 `. sty proxy off`
 
-Note that you can't use word `off` for a proxy name in the confif file.
+Note that you can't use word `off` for a proxy name in the config file.
 
 ## Configuration
 
@@ -116,9 +118,8 @@ All config files live in `~/.sty`
 
 `gem uninstall sty` 
 
-`sudo rm -f /usr/local/bin/sty` 
-
-`rm -rf ~/.sty`
+Sty will ask if you want to remove `~/.sty` with all your configuration.
+Be careful not to lose your keys.
 
 ## Caveats
 
