@@ -1,4 +1,5 @@
 # Sty
+[![Gem Version](https://badge.fury.io/rb/sty.svg)](https://badge.fury.io/rb/sty)
 [![Build Status](https://travis-ci.org/sozonnyk/sty.svg?branch=master)](https://travis-ci.org/sozonnyk/sty)
 
 <a ti   tle="Jean-Pol GRANDMONT [CC BY 3.0 (https://creativecommons.org/licenses/by/3.0)], via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:Fourneau_St-Michel_-_Porcherie_(Forri%C3%A8res).JPG">
@@ -11,7 +12,7 @@ work with AWS. Sty is working on Mac and Linux using Bash or Zsh.
 
 The main use case for Sty is to obtain and store temporary AWS
 credentials for MFA enabled AWS users who are required to assume a role
-in the different account.
+in the different account.   
 
 Sty can also help to access EC2 instances using SSH or SSM Session. It
 provides a convenient command line interface to quickly select a server

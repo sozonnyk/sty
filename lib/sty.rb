@@ -4,4 +4,11 @@ trap "INT" do
   exit 1
 end
 
+#dir = File.expand_path(File.dirname(__FILE__))
+#$LOAD_PATH.unshift(dir)
+#
+#puts $:
+
 require_relative 'sty/cli'
+
+#Sty::Cli.start(ARGV)

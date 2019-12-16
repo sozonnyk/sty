@@ -11,7 +11,7 @@ else
   export STY_SOURCE_RUN=true
 fi
 
-result=`ruby -e "require 'sty'" $@`
+result=`ruby -e "require 'sty'; Sty::Cli.start(ARGV)" $@`
 
 marker="#EVAL#"
 if [[ "$result" =~ $marker ]]; then

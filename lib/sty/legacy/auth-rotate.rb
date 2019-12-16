@@ -1,4 +1,4 @@
-require_relative 'functions'
+require_relative '../util'
 
 require 'aws-sdk-iam'
 
@@ -66,4 +66,4 @@ class Rotator
   end
 end
 
-Rotator.new.rotate
+#Rotator.new.rotate
