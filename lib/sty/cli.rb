@@ -46,7 +46,7 @@ module Sty
     method_option :role, aliases: "-r", dssc: "Override role name"
 
     def login(path)
-      source_run(__method__)
+      #source_run(__method__)
       Sty::Auth.new.login(path, options[:role])
     end
 

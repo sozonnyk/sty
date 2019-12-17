@@ -49,10 +49,6 @@ module Sty
       @dir = @dir || sty_home
     end
 
-    def cache_file(path, identity)
-      "#{dir}/auth-cache/#{path.join('-')}-#{identity}.yaml"
-    end
-
     def yaml(file)
       Psych.load_file("#{dir}/#{file}.yaml")
     end
@@ -69,6 +65,12 @@ module Sty
 
     def region
       ENV['AWS_REGION'] || DEFAULT_REGION
+    end
+
+    def check_proxy
+      unless ENV.find { |k, v| k =~ /HTTPS_PROXY/i }
+        STDERR.puts red("WARNING! \"https_proxy\" env variable is not set.")
+      end
     end
 
     def act_acc

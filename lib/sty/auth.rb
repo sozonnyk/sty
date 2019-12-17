@@ -15,33 +15,32 @@ module Sty
       puts store
     end
 
+    def login(fqn, role = nil)
+      check_proxy
+      acc = account(to_path(fqn))
+      if parent(acc)
+        creds = login_role(acc, role)
+      else
+        creds = login_bare(acc)
+      end
+      print_creds(acc, creds) if creds
+    end
 
     def logout
       current = ENV['AWS_ACTIVE_ACCOUNT']
       identity = ENV['AWS_ACTIVE_IDENTITY']
       STDERR.puts "Logging off from: #{white(current)}"
-      if current
-        cache = cache_file(to_path(current), identity)
-        begin
-          File.delete(cache)
-        rescue Errno::ENOENT => e
-        end
-      end
+      @cred_store.delete_creds(to_path(current), identity) if current
       puts "#EVAL#"
       puts "unset AWS_ACTIVE_ACCOUNT AWS_SESSION_EXPIRY AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_ACTIVE_IDENTITY"
     end
 
     def initialize
-      #aws-sdk is slow, so load it only when needed
+      # aws-sdk is slow, so load it only when needed
       require 'aws-sdk-core'
       Aws.config.update(:http_proxy => ENV['https_proxy'])
       @config = deep_merge(yaml('auth'), yaml('auth-keys'))
-    end
-
-    def check_proxy
-      unless ENV.find { |k, v| k =~ /HTTPS_PROXY/i }
-        STDERR.puts red("WARNING! \"https_proxy\" env variable is not set.")
-      end
+      @cred_store = CredentialsStore.get(false)
     end
 
     def user
@@ -51,6 +50,10 @@ module Sty
     def account(path)
       acc = @config['accounts'].dig(*path)
       unless acc
+
+        require 'pry'
+        binding.pry
+
         STDERR.puts red("ERROR! Account #{to_fqn(path)} not found in config")
         exit 1
       end
@@ -63,39 +66,29 @@ module Sty
       acc['parent']
     end
 
-    def cached_creds(path, identity)
+    def base_creds(acc)
+      path = acc['path']
       acc_fqn = to_fqn(path)
-      begin
-        cached_creds = Psych.load_file(cache_file(path, identity))
-        raise(RuntimeError) unless cached_creds
-      rescue Errno::ENOENT, RuntimeError
-        STDERR.puts "No cached creds for #{acc_fqn}"
-        return nil
-      end
 
-      remained_minutes = ((cached_creds['expiration'] - Time.now) / 60).to_i
-
-      if remained_minutes > 0
-        STDERR.puts "Loaded cached creds for #{acc_fqn}"
-        STDERR.puts "Credentials will stay active for the next #{remained_minutes} min"
-        return {creds: Aws::Credentials.new(cached_creds['access_key_id'],
-                                            cached_creds['secret_access_key'],
-                                            cached_creds['session_token']),
-                expiry: cached_creds['expiration']}
+      if acc['key_id'] && acc['secret_key']
+        creds = Aws::Credentials.new(acc['key_id'], acc['secret_key'])
       else
-        STDERR.puts "Cached creds for #{acc_fqn} expired"
+        creds = @cred_store.base_creds(path)
       end
-    end
 
-    def save_creds(acc, creds, expiration, identity)
-      creds_hash = {'access_key_id' => creds.access_key_id,
-                    'secret_access_key' => creds.secret_access_key,
-                    'session_token' => creds.session_token,
-                    'expiration' => expiration
-      }
-      File.open(cache_file(acc['path'], identity), 'w') do |file|
-        file.write(Psych.dump(creds_hash))
+      unless creds
+        STDERR.puts "Please provide base AWS credentials for #{white(acc_fqn)}"
+        STDERR.puts "Enter KEY_ID:"
+        acc['key_id'] = STDIN.gets.chomp
+
+        STDERR.puts "Enter SECRET_KEY:"
+        acc['secret_key'] = STDIN.gets.chomp
+
+        creds = Aws::Credentials.new(acc['key_id'], acc['secret_key'])
+        @cred_store.save_base_creds(path, creds)
       end
+
+      creds
     end
 
     def login_bare(acc)
@@ -103,17 +96,14 @@ module Sty
       path = acc['path']
       acc_fqn = to_fqn(path)
 
-      cached = cached_creds(path, user)
+      cached = @cred_store.temp_creds(path, user)
       return {creds: cached[:creds], expiry: cached[:expiry], identity: user} if cached
+
+      mfa = "arn:aws:iam::#{acc['acc_id']}:mfa/#{user}"
+      sts = Aws::STS::Client.new(credentials: base_creds(acc), region: region)
 
       STDERR.puts "Enter MFA for #{acc_fqn}"
       token = STDIN.gets.chomp
-
-      mfa = "arn:aws:iam::#{acc['acc_id']}:mfa/#{user}"
-
-      bare_creds = Aws::Credentials.new(acc['key_id'], acc['secret_key'])
-
-      sts = Aws::STS::Client.new(credentials: bare_creds, region: region)
 
       begin
         session = sts.get_session_token(duration_seconds: SESSION_DURATION_SECONDS,
@@ -131,7 +121,7 @@ module Sty
 
       STDERR.puts green("Successfully obtained creds for #{acc_fqn}")
 
-      save_creds(acc, creds, session.credentials.expiration, user)
+      @cred_store.save_temp_creds(acc['path'], user, creds, session.credentials.expiration)
 
       {creds: creds, expiry: session.credentials.expiration, identity: user}
     end
@@ -141,7 +131,7 @@ module Sty
       active_role = role || acc['role'] || DEFAULT_ROLE_NAME
       role_arn = "arn:aws:iam::#{acc['acc_id']}:role/#{active_role}"
 
-      cached = cached_creds(path, active_role)
+      cached = @cred_store.temp_creds(path, active_role)
       return {creds: cached[:creds], expiry: cached[:expiry], identity: active_role} if cached
 
       parent_path = to_path(parent(acc))
@@ -162,7 +152,7 @@ module Sty
         exit 1
       end
       STDERR.puts green("Successfully obtained creds for #{to_fqn(path)}")
-      save_creds(acc, creds, creds.expiration, active_role)
+      @cred_store.save_temp_creds(acc['path'], active_role, creds, creds.expiration)
 
       {creds: creds, expiry: creds.expiration, identity: active_role}
     end
@@ -175,24 +165,6 @@ module Sty
       puts "export AWS_ACCESS_KEY_ID=#{creds[:creds].access_key_id}"
       puts "export AWS_SECRET_ACCESS_KEY=#{creds[:creds].secret_access_key}"
       puts "export AWS_SESSION_TOKEN=#{creds[:creds].session_token}"
-    end
-
-    def login(fqn, role = nil)
-
-      #require 'pry'
-      #binding.pry
-
-
-      check_proxy
-      acc = account(to_path(fqn))
-
-      if parent(acc)
-        creds = login_role(acc, role)
-      else
-        creds = login_bare(acc)
-      end
-
-      print_creds(acc, creds) if creds
     end
 
   end
