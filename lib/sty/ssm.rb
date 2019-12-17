@@ -78,7 +78,6 @@ module Sty
     end
 
     def ping(instance)
-      #binding.pry
       status = ssm_details[instance_id(instance)]&.ping_status || 'Unavailable'
       version_str = ssm_details[instance_id(instance)]&.agent_version
       version = Gem::Version.new(version_str || '0')

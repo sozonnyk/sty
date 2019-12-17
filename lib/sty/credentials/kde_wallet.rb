@@ -1,5 +1,7 @@
+require_relative 'base_store'
+
 module Sty
-  class KdeWallet
+  class KdeWallet < BaseStore
 
   end
 end

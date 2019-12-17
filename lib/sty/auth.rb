@@ -36,11 +36,25 @@ module Sty
     end
 
     def initialize
+      init_aws
+      init_config
+      init_store
+    end
+
+    def init_aws
       # aws-sdk is slow, so load it only when needed
       require 'aws-sdk-core'
       Aws.config.update(:http_proxy => ENV['https_proxy'])
+    end
+
+    def init_config
       @config = deep_merge(yaml('auth'), yaml('auth-keys'))
-      @cred_store = CredentialsStore.get(false)
+    end
+
+    def init_store
+      force_storage = @config['force_storage']
+      STDERR.puts yellow("Credential storage is forced to #{force_storage}") if force_storage
+      @cred_store = CredentialsStore.get(force_storage)
     end
 
     def user
@@ -137,11 +151,9 @@ module Sty
       parent_path = to_path(parent(acc))
       parent_acc = account(parent_path)
       parent_creds = login_bare(parent_acc)[:creds]
-      sts = Aws::STS::Client.new(
-          credentials: parent_creds,
-          endpoint: 'https://sts.ap-southeast-2.amazonaws.com',
-          region: region
-      )
+      sts = Aws::STS::Client.new(credentials: parent_creds,
+                                 endpoint: 'https://sts.ap-southeast-2.amazonaws.com',
+                                 region: region)
       begin
         creds = sts.assume_role(role_arn: role_arn,
                                 role_session_name: "#{user}-#{parent_path.join('-')}",

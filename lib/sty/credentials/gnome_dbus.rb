@@ -1,4 +1,7 @@
+require_relative 'base_store'
+
 module Sty
-  class GnomeDbus
+  class GnomeDbus < BaseStore
+
   end
 end

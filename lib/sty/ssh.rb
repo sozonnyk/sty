@@ -120,7 +120,7 @@ module Sty
     end
 
     def key_dir
-      ssh_keys = auth_config['ssh-keys']
+      ssh_keys = auth_config['ssh-keys'] || auth_config['ssh_keys']
       ssh_keys = "#{dir}/#{ssh_keys}" unless ssh_keys =~ /^\/|^~/
       ssh_keys
     end

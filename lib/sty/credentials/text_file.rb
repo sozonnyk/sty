@@ -1,7 +1,7 @@
 require_relative 'base_store'
 
 module Sty
-  class FlatFile < BaseStore
+  class TextFile < BaseStore
     include Sty::Util
 
     private
