@@ -7,17 +7,41 @@ require_relative 'ssh'
 require_relative 'ssm'
 
 module Sty
-  class Cli < Thor
-    map auth: :login, acct: :account, px: :proxy
-
+  class BaseCommand < Thor
     def self.basename
       'sty'
     end
 
-    desc "",""
-    def test
-      Sty::Auth.new.test()
+    def self.exit_on_failure?
+      true
     end
+  end
+
+  class Credentials < BaseCommand
+
+    desc "show ACCOUNT_PATH", "Show stored credentials for an account"
+    def show(fqn)
+      Sty::Auth.new.show_creds(fqn)
+    end
+
+    desc "replace ACCOUNT_PATH", "Replace stored credentials for an account"
+    def replace(fqn)
+      Sty::Auth.new.replace_creds(fqn)
+    end
+
+    desc "rotate ACCOUNT_PATH", "Automatically rotate stored credentials for an account"
+    def rotate(fqn)
+      Sty::Auth.new.rotate_creds(fqn)
+    end
+
+  end
+
+  class Cli < BaseCommand
+
+    map auth: :login, acct: :account, px: :proxy
+
+    desc "credentials SUBCOMMAND", "Manage stored credentials"
+    subcommand 'credentials', Credentials
 
     desc "ssm [OPTIONS] <SEARCH_TERMS...>", "Creates ssm session to an EC2 instance. SEARCH_TERMS to search in EC2 instance ID, name or IP address"
     def ssm(*search_term)
@@ -45,9 +69,9 @@ module Sty
     desc "login ACCOUNT_PATH", "Authenticate to the account"
     method_option :role, aliases: "-r", dssc: "Override role name"
 
-    def login(path)
-      #source_run(__method__)
-      Sty::Auth.new.login(path, options[:role])
+    def login(fqn)
+      source_run(__method__)
+      Sty::Auth.new.login(fqn, options[:role])
     end
 
     desc "logout", "Forget current credentials and clear cache"
@@ -86,4 +110,6 @@ module Sty
     end
 
   end
+
+
 end

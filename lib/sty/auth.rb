@@ -1,3 +1,4 @@
+require 'ostruct'
 require_relative 'util'
 require_relative 'dig'
 require_relative 'credentials/credentials_store'
@@ -10,15 +11,10 @@ module Sty
     DEFAULT_ROLE_NAME = 'ReadOnlyRole'
     DEFAULT_REGION = 'ap-southeast-2'
 
-    def test
-      store = Sty::CredentialsStore.get
-      puts store
-    end
-
     def login(fqn, role = nil)
       check_proxy
-      acc = account(to_path(fqn))
-      if parent(acc)
+      acc = account(fqn)
+      if acc.parent
         creds = login_role(acc, role)
       else
         creds = login_bare(acc)
@@ -35,23 +31,34 @@ module Sty
       puts "unset AWS_ACTIVE_ACCOUNT AWS_SESSION_EXPIRY AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_ACTIVE_IDENTITY"
     end
 
-    def initialize
-      init_aws
-      init_config
-      init_store
+    def show_creds(fqn)
+      creds = @cred_store.base_creds(to_path(fqn))
+      if creds
+        puts "Stored base credentials for #{white(fqn)}"
+        puts "AWS_ACCESS_KEY_ID=#{creds.access_key_id}"
+        puts "AWS_SECRET_ACCESS_KEY=#{creds.secret_access_key}"
+      else
+        puts "No base credentials stored for #{fqn} account"
+      end
+
     end
 
-    def init_aws
+    def replace_creds(fqn)
+      request_base_creds(account(fqn))
+    end
+
+    def rotate_creds(fqn)
+      puts "Not implemented yet"
+    end
+
+    def initialize
+      # init aws
       # aws-sdk is slow, so load it only when needed
       require 'aws-sdk-core'
       Aws.config.update(:http_proxy => ENV['https_proxy'])
-    end
-
-    def init_config
+      # init config
       @config = deep_merge(yaml('auth'), yaml('auth-keys'))
-    end
-
-    def init_store
+      # init creds store
       force_storage = @config['force_storage']
       STDERR.puts yellow("Credential storage is forced to #{force_storage}") if force_storage
       @cred_store = CredentialsStore.get(force_storage)
@@ -61,122 +68,110 @@ module Sty
       @config['username']
     end
 
-    def account(path)
-      acc = @config['accounts'].dig(*path)
-      unless acc
-
-        require 'pry'
-        binding.pry
-
-        STDERR.puts red("ERROR! Account #{to_fqn(path)} not found in config")
+    def account(fqn)
+      path = to_path(fqn)
+      acc_cfg = @config['accounts'].dig(*path)
+      unless acc_cfg
+        STDERR.puts red("ERROR! Account #{fqn} not found in config")
         exit 1
       end
 
-      acc['path'] = path
+      acc = OpenStruct.new(acc_cfg)
+      acc.fqn = fqn
+      acc.path = path
+
       acc
     end
 
-    def parent(acc)
-      acc['parent']
+    def credentials(creds, expiry, identity)
+      OpenStruct.new(creds: creds, expiry: expiry, identity: identity)
     end
 
-    def base_creds(acc)
-      path = acc['path']
-      acc_fqn = to_fqn(path)
+    def request_base_creds(acc)
+      STDERR.puts "Please provide base AWS credentials for #{white(acc.fqn)}"
+      STDERR.puts "Enter AWS_ACCESS_KEY_ID:"
+      key_id = STDIN.gets.chomp
 
-      if acc['key_id'] && acc['secret_key']
-        creds = Aws::Credentials.new(acc['key_id'], acc['secret_key'])
-      else
-        creds = @cred_store.base_creds(path)
-      end
+      STDERR.puts "Enter AWS_SECRET_ACCESS_KEY:"
+      secret_key = STDIN.gets.chomp
 
-      unless creds
-        STDERR.puts "Please provide base AWS credentials for #{white(acc_fqn)}"
-        STDERR.puts "Enter KEY_ID:"
-        acc['key_id'] = STDIN.gets.chomp
-
-        STDERR.puts "Enter SECRET_KEY:"
-        acc['secret_key'] = STDIN.gets.chomp
-
-        creds = Aws::Credentials.new(acc['key_id'], acc['secret_key'])
-        @cred_store.save_base_creds(path, creds)
-      end
+      creds = Aws::Credentials.new(key_id, secret_key)
+      @cred_store.save_base_creds(acc.path, creds)
 
       creds
     end
 
+    def base_creds(acc)
+      if acc.key_id && acc.secret_key
+        creds = Aws::Credentials.new(acc.key_id, acc.secret_key)
+      else
+        creds = @cred_store.base_creds(acc.path) || request_base_creds(acc.path)
+      end
+      creds
+    end
+
     def login_bare(acc)
+      cached = @cred_store.temp_creds(acc.path, user)
+      return credentials(cached[:creds], cached[:expiry], user) if cached
 
-      path = acc['path']
-      acc_fqn = to_fqn(path)
-
-      cached = @cred_store.temp_creds(path, user)
-      return {creds: cached[:creds], expiry: cached[:expiry], identity: user} if cached
-
-      mfa = "arn:aws:iam::#{acc['acc_id']}:mfa/#{user}"
+      mfa_arn = "arn:aws:iam::#{acc.acc_id}:mfa/#{user}"
       sts = Aws::STS::Client.new(credentials: base_creds(acc), region: region)
 
-      STDERR.puts "Enter MFA for #{acc_fqn}"
+      STDERR.puts "Enter MFA for #{acc.fqn}"
       token = STDIN.gets.chomp
-
       begin
         session = sts.get_session_token(duration_seconds: SESSION_DURATION_SECONDS,
-                                        serial_number: mfa,
+                                        serial_number: mfa_arn,
                                         token_code: token)
-
         creds = Aws::Credentials.new(session.credentials.access_key_id,
                                      session.credentials.secret_access_key,
                                      session.credentials.session_token)
       rescue Exception => e
-        STDERR.puts red("ERROR! Unable to obtain credentials for #{acc_fqn}")
+        STDERR.puts red("ERROR! Unable to obtain credentials for #{acc.fqn}")
         STDERR.puts white(e.message)
         exit 1
       end
 
-      STDERR.puts green("Successfully obtained creds for #{acc_fqn}")
-
-      @cred_store.save_temp_creds(acc['path'], user, creds, session.credentials.expiration)
-
-      {creds: creds, expiry: session.credentials.expiration, identity: user}
+      STDERR.puts green("Successfully obtained creds for #{acc.fqn}")
+      @cred_store.save_temp_creds(acc.path, user, creds, session.credentials.expiration)
+      credentials(creds, session.credentials.expiration, user)
     end
 
     def login_role(acc, role)
-      path = acc['path']
-      active_role = role || acc['role'] || DEFAULT_ROLE_NAME
-      role_arn = "arn:aws:iam::#{acc['acc_id']}:role/#{active_role}"
+      active_role = role || acc.role || DEFAULT_ROLE_NAME
+      role_arn = "arn:aws:iam::#{acc.acc_id}:role/#{active_role}"
 
-      cached = @cred_store.temp_creds(path, active_role)
-      return {creds: cached[:creds], expiry: cached[:expiry], identity: active_role} if cached
+      cached = @cred_store.temp_creds(acc.path, active_role)
+      return credentials(cached[:creds], cached[:expiry], active_role) if cached
 
-      parent_path = to_path(parent(acc))
-      parent_acc = account(parent_path)
+      parent_acc = account(acc.parent)
       parent_creds = login_bare(parent_acc)[:creds]
       sts = Aws::STS::Client.new(credentials: parent_creds,
                                  endpoint: 'https://sts.ap-southeast-2.amazonaws.com',
                                  region: region)
       begin
         creds = sts.assume_role(role_arn: role_arn,
-                                role_session_name: "#{user}-#{parent_path.join('-')}",
+                                role_session_name: "#{user}-#{parent_acc.path.join('-')}",
                                 duration_seconds: 3600).credentials
       rescue Exception => e
-        STDERR.puts red("ERROR! Unable to obtain credentials for #{to_fqn(path)}")
+        STDERR.puts red("ERROR! Unable to obtain credentials for #{acc.fqn}")
         STDERR.puts white(e.message)
         exit 1
       end
-      STDERR.puts green("Successfully obtained creds for #{to_fqn(path)}")
-      @cred_store.save_temp_creds(acc['path'], active_role, creds, creds.expiration)
+      STDERR.puts green("Successfully obtained creds for #{acc.fqn}")
+      @cred_store.save_temp_creds(acc.path, active_role, creds, creds.expiration)
 
-      {creds: creds, expiry: creds.expiration, identity: active_role}
+      credentials(creds, creds.expiration, active_role)
     end
 
     def print_creds(acc, creds)
       puts "#EVAL#"
-      puts "export AWS_ACTIVE_ACCOUNT=#{to_fqn(acc['path'])}"
-      puts "export AWS_ACTIVE_IDENTITY=#{creds[:identity]}"
-      puts "export AWS_SESSION_EXPIRY=\"#{creds[:expiry]}\""
-      puts "export AWS_ACCESS_KEY_ID=#{creds[:creds].access_key_id}"
-      puts "export AWS_SECRET_ACCESS_KEY=#{creds[:creds].secret_access_key}"
-      puts "export AWS_SESSION_TOKEN=#{creds[:creds].session_token}"
+      puts "export AWS_ACTIVE_ACCOUNT=#{acc.fqn}"
+      puts "export AWS_ACTIVE_IDENTITY=#{creds.identity}"
+      puts "export AWS_SESSION_EXPIRY=\"#{creds.expiry}\""
+      puts "export AWS_ACCESS_KEY_ID=#{creds.creds.access_key_id}"
+      puts "export AWS_SECRET_ACCESS_KEY=#{creds.creds.secret_access_key}"
+      puts "export AWS_SESSION_TOKEN=#{creds.creds.session_token}"
     end
 
   end
