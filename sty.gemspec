@@ -4,7 +4,7 @@ $LOAD_PATH.unshift lib unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |s|
   s.name = 'sty'
-  s.version = '0.0.3'
+  s.version = '0.0.4'
   s.description = "Command line tools"
   s.authors = ["Andrew Sozonnyk"]
   s.email = ''
@@ -26,7 +26,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'aws-sdk-ssm', '~> 1'
   s.add_runtime_dependency 'aws-sdk-iam', '~> 1'
 
-  #s.add_runtime_dependency 'require_all', '~> 0'
   s.add_runtime_dependency 'ruby-dbus', '~> 0'
   s.add_runtime_dependency 'ruby-keychain', '~> 0'
   s.add_runtime_dependency 'os', '~> 0'
