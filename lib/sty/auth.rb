@@ -11,6 +11,19 @@ module Sty
     DEFAULT_ROLE_NAME = 'ReadOnlyRole'
     DEFAULT_REGION = 'ap-southeast-2'
 
+    def initialize
+      # init aws
+      # aws-sdk is slow, so load it only when needed
+      require 'aws-sdk-core'
+      set_aws_proxy
+      # init config
+      @config = group_yaml("auth*")
+      # init creds store
+      force_storage = @config['force_storage']
+      STDERR.puts yellow("Credential storage is forced to #{force_storage}") if force_storage
+      @cred_store = CredentialsStore.get(force_storage)
+    end
+
     def login(fqn, role = nil)
       check_proxy
       acc = account(fqn)
@@ -34,13 +47,12 @@ module Sty
     def show_creds(fqn)
       creds = @cred_store.base_creds(to_path(fqn))
       if creds
-        puts "Stored base credentials for #{white(fqn)}"
-        puts "AWS_ACCESS_KEY_ID=#{creds.access_key_id}"
-        puts "AWS_SECRET_ACCESS_KEY=#{creds.secret_access_key}"
+        STDERR.puts "Stored base credentials for #{white(fqn)}"
+        STDERR.puts "AWS_ACCESS_KEY_ID=#{creds.access_key_id}"
+        STDERR.puts "AWS_SECRET_ACCESS_KEY=#{creds.secret_access_key}"
       else
-        puts "No base credentials stored for #{fqn} account"
+        STDERR.puts "No base credentials stored for #{fqn} account"
       end
-
     end
 
     def replace_creds(fqn)
@@ -48,20 +60,7 @@ module Sty
     end
 
     def rotate_creds(fqn)
-      puts "Not implemented yet"
-    end
-
-    def initialize
-      # init aws
-      # aws-sdk is slow, so load it only when needed
-      require 'aws-sdk-core'
-      Aws.config.update(:http_proxy => ENV['https_proxy'])
-      # init config
-      @config = deep_merge(yaml('auth'), yaml('auth-keys'))
-      # init creds store
-      force_storage = @config['force_storage']
-      STDERR.puts yellow("Credential storage is forced to #{force_storage}") if force_storage
-      @cred_store = CredentialsStore.get(force_storage)
+      STDERR.puts "Not implemented yet"
     end
 
     def user
@@ -110,6 +109,19 @@ module Sty
       creds
     end
 
+    def privileged_warning(acc, role)
+      warning_config = @config['priveleged_access_warning'] || {}
+      role_regex = warning_config['role_regex'] || []
+      fqn_regex = warning_config['fqn_regex'] || []
+      message = warning_config['message'] || ''
+
+      if role_regex.any? { |r| Regexp.new(r).match(role) } &&
+          fqn_regex.any? { |r| Regexp.new(r).match(acc.fqn) }
+        STDERR.puts(red(message))
+      end
+
+    end
+
     def login_bare(acc)
       cached = @cred_store.temp_creds(acc.path, user)
       return credentials(cached[:creds], cached[:expiry], user) if cached
@@ -140,6 +152,8 @@ module Sty
     def login_role(acc, role)
       active_role = role || acc.role || DEFAULT_ROLE_NAME
       role_arn = "arn:aws:iam::#{acc.acc_id}:role/#{active_role}"
+
+      privileged_warning(acc, role)
 
       cached = @cred_store.temp_creds(acc.path, active_role)
       return credentials(cached[:creds], cached[:expiry], active_role) if cached

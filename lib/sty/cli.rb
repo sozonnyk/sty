@@ -52,7 +52,6 @@ module Sty
     method_option :no_jumphost, type: :boolean, default: false, aliases: "-n", desc: "Connect directly without jumphost"
     method_option :select_jumphost, type: :boolean, aliases: "-s", desc: "Select jumphost instance"
     method_option :use_key, type: :boolean, aliases: "-k", desc: "Use private key auth for target instance. Keys are searched recursively in ~/.sty/keys"
-
     def ssh(*search_term)
       Sty::Ssh.new.connect(search_term, options[:no_jumphost], options[:select_jumphost], options[:use_key])
     end
@@ -61,40 +60,34 @@ module Sty
     method_option :browser, type: :string, aliases: "-b", enum: Sty::Console::BROWSERS, desc: "Use specific browser"
     method_option :incognito, type: :boolean, aliases: "-i", desc: "Create new incognito window"
     method_option :logout, type: :boolean, aliases: "-l", dssc: "Logout from current session"
-
     def console
       Sty::Console.new.action(options[:browser], options[:incognito], options[:logout])
     end
 
     desc "login ACCOUNT_PATH", "Authenticate to the account"
     method_option :role, aliases: "-r", dssc: "Override role name"
-
     def login(fqn)
       source_run(__method__)
       Sty::Auth.new.login(fqn, options[:role])
     end
 
     desc "logout", "Forget current credentials and clear cache"
-
     def logout
       source_run(__method__)
       Sty::Auth.new.logout
     end
 
     desc "info", "Get current session information"
-
     def info
       Sty::Info.new.session_info
     end
 
     desc "account ACCOUNT_ID", "Find account information"
-
     def account(path)
       Sty::Info.new.account_info(path)
     end
 
-    desc "proxy [PROXY_ID]", "Switch session proxy (use 'off' to disable)"
-
+    desc "proxy [PROXY_ID]", "Switch current shell proxy. Use 'off' to disable proxy."
     def proxy(px = nil)
       source_run(__method__)
       Sty::Proxy.new.action(px)

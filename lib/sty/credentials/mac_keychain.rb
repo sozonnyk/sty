@@ -13,7 +13,7 @@ module Sty
       @chain = Keychain.open(CHAIN_NAME)
       unless @chain.exists?
         STDERR.puts "New keychain named \"#{green(CHAIN_NAME)}\" will be created in \"~/Library/Keychains/\" to store your AWS credentials"
-        STDERR.puts red("You must remember the password you supply as it will be required to unlock keychain.")
+        STDERR.puts red("You must remember the password you supply as it will be required to unlock the keychain.")
         STDERR.puts "Press [#{green('ENTER')}] to continue."
         STDIN.gets
         @chain = Keychain.create(CHAIN_NAME)

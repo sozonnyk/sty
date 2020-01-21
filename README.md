@@ -7,12 +7,12 @@
 
 ## Overview
 
-Sty is a set of handy command line tools meant to help with day-to-day
+Sty is a set of handy command line tools, meant to help with day-to-day
 work with AWS. Sty is working on Mac and Linux using Bash or Zsh. 
 
 The main use case for Sty is to obtain and store temporary AWS
-credentials for MFA enabled AWS users who are required to assume a role
-in the different account.   
+credentials for MFA enabled AWS users, who are required to assume a role
+in the different account.
 
 Sty can also help to access EC2 instances using SSH or SSM Session. It
 provides a convenient command line interface to quickly select a server
@@ -21,19 +21,42 @@ and initiate a connection.
 ## Installation
 
 Sty is written in Ruby so you need to ensure it installed beforehand.
-Most modern Linux and Mac versions should have Ruby pre-installed. In
-any case, it is recommended to use Ruby version manager such as
+Most modern Linux and Mac versions should have Ruby pre-installed.
+However default Ruby installation on Mac may have issues with installing
+Ruby libraries aka gems. So it is recommended to use
+[Brew](http://brew.sh) package manager and Ruby version manager such as
 [rbenv](https://github.com/rbenv/rbenv)
-
-To install Sty run:
-
-`gem install sty`
 
 During installation, Sty creates its executable `/usr/local/bin/sty`.
 This installation step requires sudo on Linux.
 
 Sty also creates `.sty` directory in your home folder. This is a place
 where all configuration files are located.
+
+### Mac OS
+1. Install Brew
+
+`/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+
+2. Install rbenv
+
+`brew install rbenv` 
+
+`rbenv init >> ~/.bash_profile`
+ 
+Restart your shell.
+
+3. Install Ruby 
+
+Currently the latest Ruby MRI version is 2.6.4
+ 
+`rbenv install 2.6.4`
+
+`rbenv global 2.6.4`
+
+4. Install Sty:
+
+`gem install sty`
 
 ## Functions
 
@@ -64,7 +87,7 @@ are requested again form the other session, they will be loaded from the
 cache.
 
 To logout from the current account, i.e. clean env variables and delete
-cache file, run:
+cached credentials, run:
 
 `. sty logout`
 
@@ -74,7 +97,7 @@ To get information about currently authenticated session run:
 
 ### Browser console (Mac only)
 
-if your session is authenticated, you can open a browser console
+If your session is authenticated, you can open a browser console window
 directly into the current account.
 
 To open browser console, run:
@@ -111,7 +134,7 @@ Where *name* is a proxy name from proxy configuration file
 
 To get current proxy settings run the same command without proxy name.
 
-To turm proxy off for the current session, run:
+To turn proxy off for the current session, run:
  
 `. sty proxy off`
 
@@ -135,6 +158,6 @@ Be careful not to lose your keys.
 
 ## TODO 
 
+- [x] Use keychain on Mac to encrypt stored credentials
 - [ ] Create test coverage 
-- [ ] Use keychain on Mac to encrypt stored credentials
 - [ ] Fix all issues on Linux

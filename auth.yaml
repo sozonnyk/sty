@@ -1,3 +1,15 @@
+default_role:
+default_region:
+
+priveleged_access_warning:
+  message: |
+    WARNING: You are about to use a privileged user in non dev enviroment!
+    This will be will be subjected to close scrunity. Consider using ReadOnlyRole instead or CI/CD instead.
+  role_regex:
+    - ^Admin.*
+  fqn_regex:
+    - ^[ga|preview].*
+
 accounts:
   ga:
     prod:

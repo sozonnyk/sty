@@ -14,11 +14,7 @@ module Sty
     def initialize
       require 'aws-sdk-ec2'
       require 'aws-sdk-ssm'
-      Aws.config.update(:http_proxy => ENV['https_proxy'])
-    end
-
-    def region
-      ENV['AWS_REGION'] || DEFAULT_REGION
+      set_aws_proxy
     end
 
     def ec2
@@ -138,7 +134,7 @@ module Sty
     end
 
     def connect(search)
-
+      puts search
       found = find(all_ec2_instances, search)
       if found.empty?
         puts "No instances found for search terms: #{search.join(', ')}"

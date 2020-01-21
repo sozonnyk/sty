@@ -1,0 +1,4 @@
+#!/bin/bash -x
+export STY_DEBUG=true
+dir=`dirname "$0"`
+ruby -e "require '$dir/../lib/sty.rb'; Sty.start" $@

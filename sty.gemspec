@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.homepage = 'https://github.com/sozonnyk/sty'
   s.license = 'MIT'
   s.require_paths = %w(lib)
-  s.required_ruby_version = ">= 2.0.0"
+  s.required_ruby_version = ">= 2.3.0"
   s.required_rubygems_version = ">= 1.3.5"
   s.summary = s.description
 

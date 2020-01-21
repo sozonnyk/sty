@@ -53,6 +53,12 @@ module Sty
       Psych.load_file("#{dir}/#{file}.yaml")
     end
 
+    def group_yaml(glob)
+      Dir.glob("#{dir}/#{glob}.yaml").reduce({}) do |memo, y|
+        deep_merge(memo, Psych.load_file(y))
+      end
+    end
+
     def dump(hash, file)
       File.open("#{dir}/#{file}.yaml", 'w') do |f|
         f.write(Psych.dump(hash))
@@ -64,7 +70,11 @@ module Sty
     end
 
     def region
-      ENV['AWS_REGION'] || DEFAULT_REGION
+      ENV['AWS_REGION'] || ENV['AWS_DEFAULT_REGION'] || DEFAULT_REGION
+    end
+
+    def set_aws_proxy
+      Aws.config.update(http_proxy: ENV['https_proxy'])
     end
 
     def check_proxy
@@ -76,7 +86,7 @@ module Sty
     def act_acc
       act_acc = ENV['AWS_ACTIVE_ACCOUNT']
       unless act_acc
-        puts red('ERROR! AWS_ACTIVE_ACCOUNT variable is not set. Is your session authenticated ?')
+        puts red('ERROR! AWS_ACTIVE_ACCOUNT variable is not set. Is your session authenticated with Sty?')
         exit 1
       end
       act_acc

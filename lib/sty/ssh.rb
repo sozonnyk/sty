@@ -7,7 +7,7 @@ module Sty
 
     def initialize
       require 'aws-sdk-ec2'
-      Aws.config.update(:http_proxy => ENV['https_proxy'])
+      set_aws_proxy
     end
 
     def all_instances
